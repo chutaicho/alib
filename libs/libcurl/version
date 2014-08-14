@@ -1,0 +1,6 @@
+libcurl 7.21.6
+
+./configure --disable-ldab --without-ssl CFLAGS="-arch i386" 
+
+# Set LDFLAGS in $(PROJECT_ROOT)/config.make
+PROJECT_LDFLAGS += $(PROJECT_ROOT)./../../addons/alib/libs/libcurl/lib/libcurl.a
