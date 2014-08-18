@@ -10,6 +10,7 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <stddef.h>
 
 namespace at
 {
@@ -28,17 +29,17 @@ namespace ofxEventManager
 #pragma mark -
 #pragma mark Event Dispatcher
 
-	class Event
+	class EventObj
 	{
 	public:
-		Event():param(0){};
-		~Event(){};
+		EventObj():param(0){};
+		~EventObj(){};
 		int param;
 	};
     
 	// ToDo
 	template<class T>
-	class CustomEvent : public Event
+	class CustomEvent : public EventObj
 	{
 	public:
 		CustomEvent(){};
@@ -49,33 +50,34 @@ namespace ofxEventManager
 	class ListenerInterface
 	{
 	public:
-	    virtual void send(ofxEventManager::Event& e) = 0;
+	    virtual void send(ofxEventManager::EventObj& e) = 0;
 	};
 
 	template <class T>
 	class ListenerObject : public ListenerInterface
 	{
 	public:
-	    ListenerObject(T* obj, void (T::*cbf)(ofxEventManager::Event&))
+	    ListenerObject(T* obj, void (T::*cbf)(ofxEventManager::EventObj&))
 	    {
 	        _obj = obj;
 	        _cbf = cbf;
 	    };
-	   	virtual void send(ofxEventManager::Event& e)
+	   	virtual void send(ofxEventManager::EventObj& e)
 	    {
 	        (_obj->*_cbf)(e);
 	    };
 
 	private:
 	    T* _obj;
-	    void (T::*_cbf)(ofxEventManager::Event&);
+	    void (T::*_cbf)(ofxEventManager::EventObj&);
 	};
 
 	class Manager
 	{
-	private:
-		typedef std::map<ofxEventManager::Event*, ListenerInterface*> Keymap;
 	    static Manager* instance;
+
+	private:
+		typedef std::map<ofxEventManager::EventObj*, ListenerInterface*> Keymap;
 		Manager(){};
         ~Manager(){};
 
@@ -97,14 +99,14 @@ namespace ofxEventManager
 		};
 
 	    template <class T>
-	    void addListener(ofxEventManager::Event& event, T* obj, void (T::*cbf)(ofxEventManager::Event&))
+	    void addListener(ofxEventManager::EventObj& event, T* obj, void (T::*cbf)(ofxEventManager::EventObj&))
 	    {
 	        ListenerInterface* lo = new ListenerObject<T>(obj, cbf);
-	    	_map.insert(std::pair<ofxEventManager::Event*, ListenerInterface*>(&event,lo));
+	    	_map.insert(std::pair<ofxEventManager::EventObj*, ListenerInterface*>(&event,lo));
 	    };
 
 	    template <class T>
-	    void removeListener(ofxEventManager::Event& event, T* obj, void (T::*cbf)(ofxEventManager::Event&))
+	    void removeListener(ofxEventManager::EventObj& event, T* obj, void (T::*cbf)(ofxEventManager::EventObj&))
 	    {
 	        Keymap::iterator it = _map.find(&event);
 
@@ -115,7 +117,7 @@ namespace ofxEventManager
 	    	else std::cout << "removeListener @ ofxEventManager: Object not found." << std::endl;
 	    };
 
-	    void dispatchEvent(ofxEventManager::Event& event)
+	    void dispatchEvent(ofxEventManager::EventObj& event)
 	    {
 	    	Keymap::iterator it = _map.find(&event);
 
@@ -131,16 +133,16 @@ namespace ofxEventManager
 	};
 };
 
-typedef ofxEventManager::Event EventObj; // this might be useful.
+typedef ofxEventManager::EventObj eEventObj; // this might be useful.
 
 template <class T>
-void ofAddEventManager(ofxEventManager::Event& event, T* obj, void (T::*cbf)(ofxEventManager::Event&))
+void ofAddEventManager(ofxEventManager::EventObj& event, T* obj, void (T::*cbf)(ofxEventManager::EventObj&))
 {
 	ofxEventManager::Manager::getInstance()->addListener(event, obj, cbf);
 };
 template <class T>
-void ofRemoveEventManager(ofxEventManager::Event& event, T* obj, void (T::*cbf)(ofxEventManager::Event&))
+void ofRemoveEventManager(ofxEventManager::EventObj& event, T* obj, void (T::*cbf)(ofxEventManager::EventObj&))
 {
 	ofxEventManager::Manager::getInstance()->removeListener(event, obj, cbf);
 };
-void ofDispatchEvent(ofxEventManager::Event& event);
+void ofDispatchEvent(ofxEventManager::EventObj& event);

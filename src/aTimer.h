@@ -18,9 +18,6 @@ namespace at
     public:
         Timer(){ _startTime = 0.f; _isStarted = false; id = 0; };
         ~Timer(){};
-
-        ofEvent<ofEventArgs> TIMER_REACHED;
-        ofxEventManager::Event completeEvent;
         
         void setInterval(float interval=1.f)
         {
@@ -55,6 +52,9 @@ namespace at
             this->_isStarted = false;
         };
         
+        ofEvent<ofEventArgs> TIMER_REACHED;
+        ofxEventManager::EventObj completeEvent;
+
         //float getTime(){ return _time; };
 
         int id;

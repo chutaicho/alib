@@ -15,7 +15,7 @@ EventManager
 
 ofxEventManager::Manager* ofxEventManager::Manager::instance = NULL;
 
-void ofDispatchEvent(ofxEventManager::Event& event)
+void ofDispatchEvent(ofxEventManager::EventObj& event)
 {	
 	ofxEventManager::Manager::getInstance()->dispatchEvent(event);
 };
