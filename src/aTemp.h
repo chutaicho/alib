@@ -129,7 +129,7 @@ namespace ofxEventManager
 	private:
 	    Keymap _map;
 	};
-}
+};
 
 typedef ofxEventManager::Event EventObj; // this might be useful.
 

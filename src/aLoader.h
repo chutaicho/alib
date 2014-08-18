@@ -7,6 +7,7 @@
 #include <typeinfo>
 #include <fstream>
 #include <sstream>
+#include <vector>
 #include <map>
 
 #include <json/json.h>
@@ -102,14 +103,14 @@ namespace at
 			bool succcess = false;
 
 			CURLcode code;
-   	        CURL* curl;
+  	        CURL* curl;
 			std::string _ip;			
-   	        curl = curl_easy_init();
+  	        curl = curl_easy_init();
 
-   	        std::stringstream res;
+  	        std::stringstream res;
 
-   	        curl_easy_setopt(curl, CURLOPT_URL, file.c_str());
-            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+  	        curl_easy_setopt(curl, CURLOPT_URL, file.c_str());
+           curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &res);
 			code = curl_easy_perform(curl);
 
@@ -289,7 +290,7 @@ namespace at
 				std::cout << "CSVLoader request failed: the index is not found. return index 0." << std::endl;
 				return _value[index];
 			}
-			else return _value[index]; 
+			else return _value[index];
 		};
 
 	protected:
