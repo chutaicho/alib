@@ -21,17 +21,6 @@ loader utilities.
 
 typedef Json::Value JsonElement;
 
-#pragma mark -
-#pragma mark libcurl callback
-
-static size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp)
-{
-    std::string buf = std::string(static_cast<char *>(buffer), size *nmemb);
-    std::stringstream * response = static_cast<std::stringstream *>(userp);
-    response->write(buf.c_str(), (std::streamsize)buf.size());
-    return size * nmemb;
-};
-
 namespace at
 {
 
@@ -93,15 +82,21 @@ namespace at
 
 	*/
 
+	// libcurl callback
+	static size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp)
+	{
+	    std::string buf = std::string(static_cast<char *>(buffer), size *nmemb);
+	    std::stringstream * response = static_cast<std::stringstream *>(userp);
+	    response->write(buf.c_str(), (std::streamsize)buf.size());
+	    return size * nmemb;
+	};
+
 	class URLLoader
 	{
 	public:
 		URLLoader(){};
-		~URLLoader()
-		{
-			std::cout << "URLLoader deleted." << std::endl;
-		};
-	    
+		~URLLoader(){};
+
 		bool get(const std::string file)
 		{
 			bool succcess = false;
@@ -225,28 +220,64 @@ namespace at
 	};
 
 #pragma mark -
+#pragma mark XML
+
+	class Xml : public Buffer
+	{
+	public:
+		Xml(){};
+		~Xml(){};
+
+	protected:
+
+	};
+
+#pragma mark -
 #pragma mark CSV
 
 	/*
 
 	Example:
-	at::CSVLoader csv;
+	at::Csv csv;
 	csv.load(ofToDataPath("test.csv"));
 
 	*/
-	
-	class CSVLoader : public Buffer
+
+	class Csv : public Buffer
 	{
 	public:
-		CSVLoader(){};
-		~CSVLoader(){};
+		Csv(){};
+		~Csv(){};
 	    
 		void load(const std::string& file)
 		{
 			if(get(file))
 			{
-				split(_data);
+				parse(_data);
 			}
+		};
+
+		void save(std::string filename)
+		{
+		  	std::ofstream ofs;
+		  	ofs.open(filename.c_str());
+
+			for(std::vector<std::string>::iterator it = _value.begin(); it != _value.end();it++)
+			{
+				std::string& target = *(it);
+				ofs << target << ",";
+			}
+
+			ofs << std::endl;
+			ofs.close();
+		};
+		void clear()
+		{
+			_value.clear();
+		};
+		void add(std::string val)
+		{
+			_value.push_back(val);
 		};
 
 		const int getSize() const { return _value.size(); };
@@ -262,7 +293,7 @@ namespace at
 		};
 
 	protected:
-		void split(std::string source)
+		void parse(std::string source)
 		{
 			std::stringstream  lineStream(source);
 		    std::string        cell;
@@ -271,7 +302,7 @@ namespace at
 		    	_value.push_back(cell);
 		    }
 		};
-
+		
 		std::vector<std::string> _value;
 	};
 };
