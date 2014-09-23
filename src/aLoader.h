@@ -110,7 +110,7 @@ namespace at
   	        std::stringstream res;
 
   	        curl_easy_setopt(curl, CURLOPT_URL, file.c_str());
-           curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &res);
 			code = curl_easy_perform(curl);
 
