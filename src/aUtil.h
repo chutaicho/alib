@@ -17,49 +17,6 @@
 namespace at
 {
 #pragma mark -
-#pragma mark point
-
-    class Point{};
-
-    template<class T>
-    class Vec2 : public Point
-    {
-        template <class> friend class Vec2;
-    public:
-        Vec2(T _x=0,T _y=0):x(_x),y(_y){};
-        void set(T _x, T _y)
-        {
-            x = _x; y = _y;
-        };
-        T x,y;
-    };
-    template<class T>
-    class Vec3 : public Point
-    {
-        template <class> friend class Vec3;
-    public:
-        Vec3(T _x=0,T _y=0,T _z=0):x(_x),y(_y),z(_z){};
-        void set(T _x, T _y, T _z)
-        {
-            x = _x; y = _y; z = _z;
-        };
-        T x,y,z;
-    };
-
-    template<class T>
-    class Rect : public Point
-    {
-        template <class> friend class Rect;
-    public:
-        Rect(T _x=0,T _y=0, T _w=0,T _h=0):x(_x),y(_y),w(_w),h(_h){};
-        void set(T _x, T _y, T _w, T _h)
-        {
-        	x = _x; y = _y; w = _w; h = _h;
-        };
-        T x,y,w,h;
-    };
-
-#pragma mark -
 #pragma mark Math
     
     inline void randomSeed()
