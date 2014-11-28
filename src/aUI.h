@@ -6,7 +6,7 @@
 
 #include <iostream>
 #include "ofMain.h"
-#include "aUtil.h"
+#include "aType.h"
 
 class ofVec2fEventArgs : public ofEventArgs 
 {
@@ -133,7 +133,7 @@ class AppButton
 {
 public:
 	AppButton(int _id=0, float rad=50.f):id(_id),x(0.f),y(0.f),radius(rad),
-    _image(NULL),w(0),h(0),cx(0),cy(0),_hover(false),active(false),_col(ofColor::white)
+    _image(NULL),w(0),h(0),cx(0),cy(0),_hover(false),active(false),_col(ofColor::white),_parent(NULL)
     {
         //std::cout << "AppButton created." << std::endl;
     };
@@ -159,6 +159,10 @@ public:
     void disable()
     {
         ofUnregisterMouseEvents(this,OF_EVENT_ORDER_BEFORE_APP);
+    };
+    void setParent(at::ViewObject* parent)
+    {
+        _parent = parent;
     };
 	void update()
     {
@@ -233,6 +237,7 @@ public:
     bool active;
     
 protected:
+    at::ViewObject* _parent;
     ofTexture* _image;
     bool _hover;
     ofColor _col;
@@ -243,12 +248,14 @@ class RectButton : public AppButton
 public:
     static const int ROUND_RADIUS = 8;
     
-	RectButton(int width=400, int height=240, ofColor base=ofColor::blue, ofColor hi=ofColor::cyan):_active(false),font(NULL),label("")
+	RectButton(int width=400, int height=240, ofColor bgOFF=ofColor::blue, ofColor bgON=ofColor::cyan, ofColor fontOFF=ofColor::black, ofColor fontON=ofColor::black):_active(false),font(NULL),label("")
     {
         w = width; h = height; cx = w >> 1; cy = h >> 1;
-        _baseRGB = base; _hiRGB = hi; _col = _baseRGB;
         
-        _fontRGB = ofColor::white;
+        _bgOFF = bgOFF; _bgON = bgON; _col = _bgOFF;
+        _fontOFF = fontOFF; _fontON = fontON; _fontRGB = _fontOFF;
+        
+        roundRadius = ROUND_RADIUS;
     };
 	~RectButton(){};
     
@@ -256,18 +263,22 @@ public:
     {
         glPushMatrix();
         {
-            ofTranslate(x, y);
+            ofTranslate((int)x, (int)y);
             
             ofSetColor(_col);
-            ofRectRounded(cx*-1, cy*-1, w, h, RectButton::ROUND_RADIUS);
+            
+            if(roundRadius > 0) ofRectRounded(cx*-1, cy*-1, w, h, RectButton::ROUND_RADIUS);
+            else ofRect(cx*-1, cy*-1, w, h);
             
             if(font != NULL)
             {
                 ofSetColor(_fontRGB);
-                
-                float fontrect = label.size() * font->getSize() * -.32;
-                font->drawString(label, (int)fontrect, 10);
+                ofRectangle fontrect = font->getStringBoundingBox(label, 0, 0);
+                font->drawString(label, (int)(fontrect.width*-.5), (int)(fontrect.height*.5));
             }
+            
+            ofSetColor(255, 255, 255, 255);
+            
         }
         glPopMatrix();
     };
@@ -275,47 +286,58 @@ public:
     {
         _hover = true;
         _active = true;
-        _col = _hiRGB;
-        _fontRGB = ofColor::black;
+        _col = _bgON;
+        _fontRGB = _fontON;
     };
     void off()
     {
         _hover = false;
         _active = false;
-        _col = _baseRGB;
-        _fontRGB = ofColor::white;
+        _col = _bgOFF;
+        _fontRGB = _fontOFF;
     };
     
 	virtual void mouseMoved(ofMouseEventArgs & args){};
 	virtual void mouseDragged(ofMouseEventArgs & args){};
     virtual void mousePressed(ofMouseEventArgs & args)
     {
-        if(!_active && (x - cx) < args.x && (x + cx) > args.x && (y - cy) < args.y && (y + cy) > args.y)
+        float fx = (_parent == NULL)? (x - cx) : (_parent->x + x) - cx;
+        float tx = (_parent == NULL)? (x + cx) : (_parent->x + x) + cx;
+        float fy = (_parent == NULL)? (y - cy) : (_parent->y + y) - cy;
+        float ty = (_parent == NULL)? (y + cy) : (_parent->y + y) + cy;
+        
+        //if(!_active && (x - cx) < args.x && (x + cx) > args.x && (y - cy) < args.y && (y + cy) > args.y)
+        if(!_active && fx < args.x && tx > args.x && fy < args.y && ty > args.y)
         {
             _hover = true;
-            _col = _hiRGB;
-            _fontRGB = ofColor::black;
+            _col = _bgON;
+            _fontRGB = _fontON;
+            //std::cout << "press." << std::endl;
         }
     };
     virtual void mouseReleased(ofMouseEventArgs & args)
     {
+        float fx = (_parent == NULL)? (x - cx) : (_parent->x + x) - cx;
+        float tx = (_parent == NULL)? (x + cx) : (_parent->x + x) + cx;
+        float fy = (_parent == NULL)? (y - cy) : (_parent->y + y) - cy;
+        float ty = (_parent == NULL)? (y + cy) : (_parent->y + y) + cy;
+        
         if(!_active && _hover)
         {
-            if((x - cx) < args.x && (x + cx) > args.x && (y - cy) < args.y && (y + cy) > args.y)
+            //if((x - cx) < args.x && (x + cx) > args.x && (y - cy) < args.y && (y + cy) > args.y)
+            if(fx < args.x && tx > args.x && fy < args.y && ty > args.y)
             {
                 _active = true;
                 
                 ofEntryEventArgs e;
                 e.state = id;
                 ofNotifyEvent(triggerEvent,e);
-                
-                //std::cout << "released." << std::endl;
             }
             else
             {
                 _active = false;
-                _col = _baseRGB;
-                _fontRGB = ofColor::white;
+                _col = _bgOFF;
+                _fontRGB = _fontOFF;
                 //std::cout << "lost." << std::endl;
             }
         }
@@ -325,10 +347,14 @@ public:
     
     ofTrueTypeFont* font;
     std::string label;
+    int  roundRadius;
     
 protected:
     bool _active;
-    ofColor _baseRGB;
-    ofColor _hiRGB;
+    
+    ofColor _bgOFF;
+    ofColor _bgON;
     ofColor _fontRGB;
+    ofColor _fontON;
+    ofColor _fontOFF;
 };

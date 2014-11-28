@@ -53,7 +53,7 @@ namespace at
         };
         
         ofEvent<ofEventArgs> TIMER_REACHED;
-        ofxEventManager::EventObj completeEvent;
+//        ofxEventManager::EventObj completeEvent;
 
         //float getTime(){ return _time; };
 

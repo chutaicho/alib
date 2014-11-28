@@ -15,6 +15,20 @@
 namespace at
 {
 	// classs templates....
+    
+    class ViewObject
+    {
+    public:
+        ViewObject():x(0.f),y(0.f),z(0.f),w(0.f),h(0.f){};
+        ~ViewObject(){};
+        
+        virtual void setup()  = 0;
+        virtual void update() = 0;
+        virtual void draw()   = 0;
+        
+        float x, y, z, w, h;
+    protected:
+    };
 };
 
 /*

@@ -107,6 +107,10 @@ namespace at
         out << "]";
         return out.str();
     };
+    inline std::string getFileExtention(std::string& str)
+    {
+        return str.substr(str.find_last_of("."));
+    };
 
 #pragma mark -
 #pragma mark Color
